@@ -47,37 +47,45 @@ async function run() {
         })
 
         // delete an assignment in db
-        app.delete('/assignments/:id', async(req, res) =>{
-            const id =req.params.id;
-            const query = {_id: new ObjectId(id)}
+        app.delete('/assignments/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
             const result = await assignmentCollection.deleteOne(query)
             res.send(result);
         })
 
+        app.get('/singleAssignment/:_id', async (req, res) => {
+            const id = (req.params._id);
+            const result = await assignmentCollection.findOne({ _id: new ObjectId(id) });
+            // console.log(result);
+            res.send(result);
+        })
+
+        app.get('/assignments/:id', async (req, res) => {
+            const id = (req.params.id);
+            const result = await assignmentCollection.findOne({ _id: new ObjectId(id) });
+            // console.log(result);
+            res.send(result);
+        })
 
         // update a assignment in db
-        // app.put('/updateAssignment/:_id', async (req, res) => {
-        //     const id = req.params._id
-        //     const updateAssignment = req.body
-        //     const query = { _id: new ObjectId(id) }
-        //     const options = { upsert: true }
-        //     const updateDoc = {
-        //         $set: {
-        //             imageUrl: assignmentData.imageUrl, title: assignmentData.title, description: assignmentData.description,
-        //             marks: assignmentData.marks, difficulty: assignmentData.difficulty, dueDate: assignmentData.dueDate,
-        //             email: assignmentData.email
-        //         },
-        //     }
-        //     const result = await assignmentCollection.updateOne(query, updateDoc, options)
-        //     res.send(result)
-        // })
+        app.put('/assignments/:id', async (req, res) => {
+            const id = req.params.id
+            const updateAssignment = req.body
+            const query = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const assignment = {
+                $set: {
+                    imageUrl: updateAssignment.imageUrl, title: updateAssignment.title, description: updateAssignment.description,
+                    marks: updateAssignment.marks, difficulty: updateAssignment.difficulty, dueDate: updateAssignment.dueDate,
+                    email: updateAssignment.email
+                },
+            }
+            const result = await assignmentCollection.updateOne(query, assignment, options)
+            res.send(result)
+        })
 
-        // app.get('/singleAssignment/:_id', async (req, res) => {
-        //     const id = (req.params._id);
-        //     const result = await assignmentCollection.findOne({ _id: new ObjectId(id)});
-        //     // console.log(result);
-        //     res.send(result);
-        // })
+
 
 
         // Send a ping to confirm a successful connection
