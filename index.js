@@ -30,6 +30,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         const assignmentCollection = client.db('onlineGroupStudy').collection('assignments')
+        const myAssignmentCollection = client.db('onlineGroupStudy').collection('myAssignments')
 
         // get all assignment data from db
         app.get('/assignments', async (req, res) => {
@@ -38,6 +39,15 @@ async function run() {
             const result = await assignmentCollection.find().toArray()
             res.send(result)
         })
+
+        // get a single assignment data from db using assignment id
+        app.get('/assignment/:id', async (req, res) => {
+            const id = (req.params.id);
+            const result = await assignmentCollection.findOne({ _id: new ObjectId(id) });
+            // console.log(result);
+            res.send(result);
+        })
+
 
         // create assignment in db 
         app.post('/assignment', async (req, res) => {
@@ -54,12 +64,6 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/singleAssignment/:_id', async (req, res) => {
-            const id = (req.params._id);
-            const result = await assignmentCollection.findOne({ _id: new ObjectId(id) });
-            // console.log(result);
-            res.send(result);
-        })
 
         app.get('/assignments/:id', async (req, res) => {
             const id = (req.params.id);
@@ -84,7 +88,14 @@ async function run() {
             const result = await assignmentCollection.updateOne(query, assignment, options)
             res.send(result)
         })
+        // my Assignments
 
+        // save a my Assignment data in db
+        app.post('/myAssignments', async (req, res) =>{
+            const myAssignmentData=req.body
+            const result = await myAssignmentCollection.insertOne(myAssignmentData)
+            res.send(result);
+        })
 
 
 
