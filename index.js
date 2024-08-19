@@ -34,8 +34,6 @@ async function run() {
 
         // get all assignment data from db
         app.get('/assignments', async (req, res) => {
-            // const email = req.params.email
-            // const query = { 'buyer.email': email }
             const result = await assignmentCollection.find().toArray()
             res.send(result)
         })
@@ -91,13 +89,26 @@ async function run() {
         // my Assignments
 
         // save a my Assignment data in db
-        app.post('/myAssignments', async (req, res) =>{
-            const myAssignmentData=req.body
+        app.post('/myAssignments', async (req, res) => {
+            const myAssignmentData = req.body
             const result = await myAssignmentCollection.insertOne(myAssignmentData)
             res.send(result);
         })
 
-
+        // get all assignments posted by a specific user
+        app.get('/myAssignments/:email', async (req,res) =>{
+            const email = req.params.email
+            const query = {'othersUser.email':email}
+            const result = await myAssignmentCollection.find(query).toArray()
+            res.send(result)
+        })
+        // delete a assignment data from db
+        app.delete('/myAssignment/:id', async (req,res) =>{
+            const id = req.params.id
+            const query = {_id: new ObjectId(id)}
+            const result = await myAssignmentCollection.deleteOne(query)
+            res.send(result)
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
