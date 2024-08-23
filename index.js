@@ -9,7 +9,10 @@ const port = process.env.PORT || 9000
 const app = express()
 // middleware
 const corsOptions = {
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173',
+        'https://online-group-study-25c87.web.app',
+        'https://online-group-study-25c87.firebaseapp.com'
+    ],
     credentials: true,
     optionSuccessStatus: 200,
 }
@@ -51,6 +54,11 @@ const verifyToken = (req, res, next) => {
     })
 }
 
+const cookieOption = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' ? true : false,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+}
 
 async function run() {
     try {
@@ -66,17 +74,13 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '365d',
             })
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production' ? true : false,
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            })
+            res.cookie('token', token, cookieOption)
                 .send({ success: true })
         })
 
         app.post('/logout', async (req, res) => {
             const user = req.body;
-            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+            res.clearCookie('token', { ...cookieOption, maxAge: 0 }).send({ success: true })
         })
 
         // services related api
@@ -139,7 +143,7 @@ async function run() {
         app.get('/all-assignments', async (req, res) => {
             const size = parseInt(req.query.size) || 3;
             const page = parseInt(req.query.page) - 1;
-            const { filter } = req.query ;
+            const { filter } = req.query;
             const sort = req.query.sort;
             console.log(size, page)
             let query = {}
@@ -235,7 +239,7 @@ async function run() {
         })
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
