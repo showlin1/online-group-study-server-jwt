@@ -81,7 +81,7 @@ async function run() {
 
         // services related api
         // get all assignment data from db
-        app.get('/assignments', logger, verifyToken, async (req, res) => {
+        app.get('/assignments', async (req, res) => {
             const result = await assignmentCollection.find().toArray()
             res.send(result)
         })
@@ -134,11 +134,50 @@ async function run() {
             const result = await assignmentCollection.updateOne(query, assignment, options)
             res.send(result)
         })
+
+        // get all assignment data from db for pagination
+        app.get('/all-assignments', async (req, res) => {
+            const size = parseInt(req.query.size) || 3;
+            const page = parseInt(req.query.page) - 1;
+            const { filter } = req.query ;
+            const sort = req.query.sort;
+            console.log(size, page)
+            let query = {}
+            if (filter) {
+                query = { difficulty: filter };
+            }
+            let options = { sort: { dueDate: sort === 'asc' ? 1 : -1 } }
+            const result = await assignmentCollection.find(query, options).skip(page * size).limit(size).toArray()
+            res.send(result)
+        })
+
+        // get all assignment data count from db
+        app.get('/assignment-count', async (req, res) => {
+            const filter = req.query.filter || 0;
+            let query = {}
+            if (filter) query = { difficulty: filter }
+            const count = await assignmentCollection.countDocuments(query)
+            res.send({ count })
+        })
+
+
         // my Assignments
 
         // save a my Assignment data in db
         app.post('/myAssignments', async (req, res) => {
-            const myAssignmentData = req.body
+            const myAssignmentData = req.body;
+            //check if its a duplicate request
+            const query = {
+                email: myAssignmentData.email,
+                assignmentId: myAssignmentData.assignmentId,
+            }
+            const alreadyApplied = await myAssignmentCollection.findOne(query)
+            // console.log(alreadyApplied);
+            if (alreadyApplied) {
+                return res
+                    .status(400)
+                    .send('You have already placed a takeAssignment on this assignment.')
+            }
             const result = await myAssignmentCollection.insertOne(myAssignmentData)
             res.send(result);
         })
